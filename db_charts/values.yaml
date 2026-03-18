@@ -1,4 +1,77 @@
 otelcollector:
   mode: "deployment"
   image:
-    repository: "otel/opentelemetry-collector"
+    repository: "otel/opentelemetry-collector-contrib"
+  config:
+    exporters:
+      debug: {}
+    extensions:
+      health_check:
+        endpoint: ${env:MY_POD_IP}:13133
+    processors:
+      batch: {}
+      memory_limiter:
+        check_interval: 5s
+        limit_percentage: 80
+        spike_limit_percentage: 25
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: ${env:MY_POD_IP}:4317
+          http:
+            endpoint: ${env:MY_POD_IP}:4318
+      postgresql:
+        endpoint: postgres:5432
+        transport: tcp
+        username: "postgres"
+        password: "postgres"
+        tls:
+          insecure: true
+        connection_pool:
+          max_idle_time: 10m
+          max_lifetime: 0
+          max_idle: 2
+          max_open: 5
+        events:
+          db.server.top_query:
+            enabled: false
+    service:
+      pipelines:
+        logs:
+          exporters:
+            - debug
+          processors:
+            - memory_limiter
+            - batch
+          receivers:
+            - otlp
+            - postgresql
+        metrics:
+          exporters:
+            - debug
+          processors:
+            - memory_limiter
+            - batch
+          receivers:
+            - otlp
+            - postgresql
+        traces:
+          exporters:
+            - debug
+          processors:
+            - memory_limiter
+            - batch
+          receivers:
+            - otlp
+
+postgres:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: "docker.io/postgres"
+    tag: "18.3"
+    pullPolicy: "IfNotPresent"
+  env:
+    POSTGRES_USER: "postgres"
+    POSTGRES_PASSWORD: "postgres"
