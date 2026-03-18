@@ -27,4 +27,10 @@ dependencies:
 - name: opentelemetry-collector
   version: 0.147.0
   repository: "https://open-telemetry.github.io/opentelemetry-helm-charts"
+  condition: otelcollector.enabled
   alias: otelcollector
+- name: kube-prometheus-stack
+  version: 82.11.0
+  repository: "https://prometheus-community.github.io/helm-charts"
+  condition: prometheus.enabled
+  alias: prometheus

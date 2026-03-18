@@ -1,10 +1,15 @@
 otelcollector:
+  enabled: true
   mode: "deployment"
   image:
     repository: "otel/opentelemetry-collector-contrib"
   config:
     exporters:
       debug: {}
+      prometheusremotewrite:
+        endpoint: "http://prometheus-stack-prometheus.prometheus:9090/api/v1/write"
+        external_labels:
+          postgres: io
     extensions:
       health_check:
         endpoint: ${env:MY_POD_IP}:13133
@@ -50,6 +55,7 @@ otelcollector:
         metrics:
           exporters:
             - debug
+            - prometheusremotewrite
           processors:
             - memory_limiter
             - batch
@@ -75,3 +81,34 @@ postgres:
   env:
     POSTGRES_USER: "postgres"
     POSTGRES_PASSWORD: "postgres"
+  
+prometheus:
+  enabled: true
+  alertmanager:
+    enabled: false
+
+  kubeStateMetrics:
+    enabled: false
+
+  nodeExporter:
+      enabled: false
+
+  prometheus:
+    enabled: true
+    enableRemoteWriteReceiver: true
+
+  prometheusOperator:
+    enabled: true
+
+  grafana:
+    enabled: true
+
+    adminUser: admin
+    adminPassword: admin
+
+    defaultDashboardsEnabled: true
+    defaultDashboardsTimezone: Asia/Taipei
+
+    grafana.ini:
+      users:
+        viewers_can_edit: true
