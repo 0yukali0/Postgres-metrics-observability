@@ -7,7 +7,7 @@ otelcollector:
     exporters:
       debug: {}
       prometheusremotewrite:
-        endpoint: "http://prometheus-stack-prometheus.prometheus:9090/api/v1/write"
+        endpoint: "http://obs-prometheus-prometheus:9090/api/v1/write"
         external_labels:
           postgres: io
     extensions:
@@ -95,7 +95,8 @@ prometheus:
 
   prometheus:
     enabled: true
-    enableRemoteWriteReceiver: true
+    prometheusSpec:
+      enableRemoteWriteReceiver: true
 
   prometheusOperator:
     enabled: true
